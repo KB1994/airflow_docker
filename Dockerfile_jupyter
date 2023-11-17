@@ -1,0 +1,27 @@
+FROM python:3.7.5-slim-buster
+
+
+COPY . /home/workspace_jupyter
+WORKDIR /opt/oracle
+
+RUN apt-get update && apt-get install -y libaio1 wget unzip
+
+RUN wget https://download.oracle.com/otn_software/linux/instantclient/instantclient-basiclite-linuxx64.zip
+RUN unzip instantclient-basiclite-linuxx64.zip \
+            && rm -f instantclient-basiclite-linuxx64.zip \
+            && cd /opt/oracle/instantclient* \
+            && rm -f *jdbc* *occi* *mysql* *README *jar uidrvci genezi adrci \
+            && echo /opt/oracle/instantclient* > /etc/ld.so.conf.d/oracle-instantclient.conf \
+            && ldconfig
+
+#RUN apt-get update && apt-get install -y gcc
+#RUN apt-get install apt-utils
+
+RUN python3 -m venv jupyter_env
+RUN . jupyter_env/bin/activate
+RUN pip install --upgrade pip
+RUN pip install pybase64
+RUN pip install jupyter
+RUN awk '{system("pip install "$0)}' /home/workspace_jupyter/requirements.txt
+EXPOSE 8888
+CMD ["jupyter", "notebook", "--ip=0.0.0.0","--port=8888", "--allow-root"]
