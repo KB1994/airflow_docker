@@ -1,0 +1,140 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres_cont
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_HOST_AUTH_METHOD=trust
+      #- POSTGRES_PASSWORD=G1VeloVerre!0
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=airflow
+      - POSTGRES_PORT=5432
+    volumes:
+    - database-data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+
+  redis:
+    image: redis-airflow:latest
+    container_name: redis_cont
+    restart: always
+    ports:
+      - 6379:6379
+
+  airflow:
+    build: .
+    image: airflow_docker:latest
+    container_name: airflow_cont
+    env_file:
+      - .env
+    restart: always
+    command: webserver
+    depends_on:
+      - postgres
+    ports:
+      - 8080:8080
+    volumes:
+      - ./airflow-data/dags:/opt/airflow/dags
+      - ./airflow-data/plugins:/opt/airflow/plugins
+      - jupyter_notebooks:/opt/oracle
+      - logs-volume:/opt/airflow/logs
+
+  airflow-scheduler:
+    build: .
+    image: airflow_docker:latest
+    container_name: airflow_scheduler_cont
+    env_file:
+      - .env
+    restart: always
+    command: scheduler
+    depends_on:
+      - postgres
+    volumes:
+      - ./airflow-data/dags:/opt/airflow/dags
+      - ./airflow-data/plugins:/opt/airflow/plugins
+      - jupyter_notebooks:/opt/oracle
+      - logs-volume:/opt/airflow/logs
+
+  airflow-worker1:
+    build: .
+    image: airflow_docker:latest
+    container_name: airflow_worker1_cont
+    env_file:
+      - .env
+    restart: always
+    command: celery worker
+    depends_on:
+      - postgres
+    volumes:
+      - ./airflow-data/dags:/opt/airflow/dags
+      - ./airflow-data/plugins:/opt/airflow/plugins
+      - jupyter_notebooks:/opt/oracle
+      - logs-volume:/opt/airflow/logs
+
+  airflow-worker2:
+    build: .
+    image: airflow_docker:latest
+    container_name: airflow_worker2_cont
+    env_file:
+      - .env
+    restart: always
+    command: celery worker
+    depends_on:
+      - postgres
+    volumes:
+      - ./airflow-data/dags:/opt/airflow/dags
+      - ./airflow-data/plugins:/opt/airflow/plugins
+      - jupyter_notebooks:/opt/oracle
+      - logs-volume:/opt/airflow/logs
+
+  airflow-worker3:
+    build: .
+    image: airflow_docker:latest
+    container_name: airflow_worker3_cont
+    env_file:
+      - .env
+    restart: always
+    depends_on:
+      - postgres
+    command: celery worker
+    volumes:
+      - ./airflow-data/dags:/opt/airflow/dags
+      - ./airflow-data/plugins:/opt/airflow/plugins
+      - jupyter_notebooks:/opt/oracle
+      - logs-volume:/opt/airflow/logs
+
+  airflow-flower:
+    build: .
+    image: airflow_docker:latest
+    container_name: airflow_flower_cont
+    depends_on:
+      - postgres
+    volumes:
+      - ./airflow-data/dags:/opt/airflow/dags
+      - ./airflow-data/plugins:/opt/airflow/plugins
+      - jupyter_notebooks:/opt/oracle
+      - logs-volume:/opt/airflow/logs
+    env_file:
+      - .env
+    restart: always
+    command: celery flower
+    ports:
+      - 5555:5555
+
+  jupyter:
+    image: docker_jupyter:latest
+    ports:
+      - "8888:8888"
+    volumes:
+      - jupyter_notebooks:/opt/oracle
+    environment:
+      - PYTHONPATH=/opt/airflow/
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --NotebookApp.token=''
+
+
+volumes:
+  database-data:
+  logs-volume:
+  jupyter_notebooks:
