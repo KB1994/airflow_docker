@@ -5,7 +5,7 @@
 IS_INITDB=True
 AIRFLOW_USER=airflow_biself
 AIRFLOW_PASSWORD=airflow_biself
-AIRFLOW_USER_EMAIL=kboussaoud@sii-maroc.com
+AIRFLOW_USER_EMAIL=yourEmail
 
 if [ $IS_INITDB ]; then
 
