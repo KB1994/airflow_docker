@@ -7,7 +7,6 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_HOST_AUTH_METHOD=trust
-      #- POSTGRES_PASSWORD=G1VeloVerre!0
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=airflow
       - POSTGRES_PORT=5432
@@ -138,3 +137,4 @@ volumes:
   database-data:
   logs-volume:
   jupyter_notebooks:
+
